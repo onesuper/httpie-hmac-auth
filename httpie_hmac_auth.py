@@ -49,17 +49,18 @@ class HmacAuth:
 
         url = urlparse.urlparse(r.url)
         path = url.path
-
+        if path.startswith('/api'):
+            path = path[4:]
         string_to_sign = '\n'.join([method, content_md5, content_type, httpdate, path])
-        digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256).digest()
+        digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha1).digest()
         signature = base64.encodestring(digest).rstrip()
 
         if self.access_key == '':
-            r.headers['Authorization'] = 'HMAC %s' % signature
+            r.headers['Authorization'] = 'ODPS %s' % signature
         elif self.secret_key == '':
             raise ValueError('HMAC secret key cannot be empty.')
         else:
-            r.headers['Authorization'] = 'HMAC %s:%s' % (self.access_key, signature)
+            r.headers['Authorization'] = 'ODPS %s:%s' % (self.access_key, signature)
 
         return r
 
