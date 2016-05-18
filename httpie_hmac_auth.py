@@ -6,6 +6,7 @@ import datetime
 import base64
 import hashlib
 import hmac
+import urllib
 
 from httpie.plugins import AuthPlugin
 
@@ -25,6 +26,7 @@ class HmacAuth:
         self.secret_key = secret_key.encode('ascii')
 
     def __call__(self, r):
+
         method = r.method
 
         content_type = r.headers.get('content-type')
@@ -49,13 +51,14 @@ class HmacAuth:
 
         url = urlparse.urlparse(r.url)
 
-        if url.query:
-            path = url.path + '?' + url.query
-        else:
-            path = url.path
+        netloc = url.netloc
+        pos = r.url.index(netloc) + len(netloc)
+        path = r.url[pos:]
 
+        path = urllib.unquote(path).decode('utf8')
         if path.startswith('/api'):
             path = path[4:]
+
         string_to_sign = '\n'.join([method, content_md5, content_type, httpdate, path])
 
         digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha1).digest()
