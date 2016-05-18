@@ -48,10 +48,16 @@ class HmacAuth:
             r.headers['Date'] = httpdate
 
         url = urlparse.urlparse(r.url)
-        path = url.path
+
+        if url.query:
+            path = url.path + '?' + url.query
+        else:
+            path = url.path
+
         if path.startswith('/api'):
             path = path[4:]
         string_to_sign = '\n'.join([method, content_md5, content_type, httpdate, path])
+
         digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha1).digest()
         signature = base64.encodestring(digest).rstrip()
 
