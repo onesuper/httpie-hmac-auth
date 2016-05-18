@@ -7,7 +7,7 @@ except ImportError:
 setup(
     name='httpie-hmac-auth',
     description='HMAC Auth plugin for HTTPie.',
-    long_description=open('README.rst').read().strip(),
+    long_description=open('README.md').read().strip(),
     version='0.2.0',
     author='Nick Satterly',
     author_email='nick.satterly@theguardian.com',
