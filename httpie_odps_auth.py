@@ -18,12 +18,12 @@ except ImportError:
     from urllib.parse import urlparse
     from urllib.parse import unquote
 
-__version__ = '0.2.0'
-__author__ = 'Nick Satterly'
+__version__ = '0.2.1'
+__author__ = 'onesuper'
 __licence__ = 'MIT'
 
 
-class HmacAuth:
+class OdpsAuth:
     def __init__(self, username, password):
         self.access_id = username
         self.access_key = password.encode('ascii')
@@ -75,18 +75,18 @@ class HmacAuth:
         if self.access_id == '':
             r.headers['Authorization'] = 'ODPS %s' % signature
         elif self.access_key == '':
-            raise ValueError('HMAC secret key cannot be empty.')
+            raise ValueError('Access key cannot be empty.')
         else:
             r.headers['Authorization'] = 'ODPS %s:%s' % (self.access_id, signature)
 
         return r
 
 
-class HmacAuthPlugin(AuthPlugin):
+class OdpsAuthPlugin(AuthPlugin):
 
     name = 'ODPS token auth'
     auth_type = 'odps'
     description = 'Sign requests using a ODPS compliant method'
 
     def get_auth(self, username, password):
-        return HmacAuth(username, password)
+        return OdpsAuth(username, password)
