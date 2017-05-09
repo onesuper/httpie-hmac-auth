@@ -1,0 +1,33 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $conf = shift @ARGV;
+my $method = shift @ARGV;
+my $uri = shift @ARGV;
+$uri =~ s/^\/+//; # remove leading slash
+
+unless (defined($conf) and defined($method) and defined($uri)) {
+    print "usage: $0 conf method uri\n";
+    print "   eg: $0 odps_config.ini get /projects/odpsdemo/tables\n";
+    exit 1;
+}
+
+my $access_id;
+my $access_key;
+my $endpoint;
+open CONF, "<", $conf or die "$!\n";
+while (<CONF>) {
+    chomp;
+    $access_id = $1 if m/^access_id\s*=\s*(\S+)$/;
+    $access_key = $1 if m/^access_key\s*=\s*(\S+)$/;
+    $endpoint = $1 if m/^end_point\s*=\s*(\S+)$/;
+}
+close CONF;
+
+die "invalid odps config file\n" unless (defined($access_id) and defined($access_key) and defined($endpoint));
+$endpoint =~ s/\/+$//; # remove trailing slash
+
+# print "/usr/bin/http -v --auth-type=odps --auth='$access_id:$access_key' GET $endpoint/$uri\n";
+exec("/usr/bin/http -v --auth-type=odps --auth='$access_id:$access_key' GET $endpoint/$uri");

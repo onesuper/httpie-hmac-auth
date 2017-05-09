@@ -5,20 +5,20 @@ except ImportError:
     pass
 
 setup(
-    name='httpie-hmac-auth',
-    description='HMAC Auth plugin for HTTPie.',
+    name='httpie-odps-auth',
+    description='ODPS Auth plugin for HTTPie.',
     long_description=open('README.md').read().strip(),
-    version='0.2.0',
-    author='Nick Satterly',
-    author_email='nick.satterly@theguardian.com',
+    version='0.2.1',
+    author='Cheng YiChao',
+    author_email='onesuperclark@gmail.com',
     license='MIT',
-    url='https://github.com/guardian/httpie-hmac-auth',
-    download_url='https://github.com/guardian/httpie-hmac-auth',
-    py_modules=['httpie_hmac_auth'],
+    url='https://github.com/onesuper/httpie-hmac-auth',
+    download_url='https://github.com/onesuper/httpie-hmac-auth',
+    py_modules=['httpie_odps_auth'],
     zip_safe=False,
     entry_points={
         'httpie.plugins.auth.v1': [
-            'httpie_hmac_auth = httpie_hmac_auth:HmacAuthPlugin'
+            'httpie_odps_auth = httpie_odps_auth:OdpsAuthPlugin'
         ]
     },
     install_requires=[

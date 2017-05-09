@@ -11,19 +11,22 @@ import urllib
 from httpie.plugins import AuthPlugin
 
 try:
-    import urlparse
-except ImportError:
-    import urllib.parse
+    from urlparse import urlparse
+    from urllib import unquote
 
-__version__ = '0.2.0'
-__author__ = 'Nick Satterly'
+except ImportError:
+    from urllib.parse import urlparse
+    from urllib.parse import unquote
+
+__version__ = '0.2.1'
+__author__ = 'onesuper'
 __licence__ = 'MIT'
 
 
-class HmacAuth:
-    def __init__(self, access_key, secret_key):
-        self.access_key = access_key
-        self.secret_key = secret_key.encode('ascii')
+class OdpsAuth:
+    def __init__(self, username, password):
+        self.access_id = username
+        self.access_key = password.encode('ascii')
 
     def __call__(self, r):
 
@@ -49,36 +52,41 @@ class HmacAuth:
             httpdate = now.strftime('%a, %d %b %Y %H:%M:%S GMT')
             r.headers['Date'] = httpdate
 
-        url = urlparse.urlparse(r.url)
+        url = urlparse(r.url)
 
         netloc = url.netloc
         pos = r.url.index(netloc) + len(netloc)
         path = r.url[pos:]
 
-        path = urllib.unquote(path).decode('utf8')
+        path = unquote(path)
+        if isinstance(path, bytes):
+            path = path.decode('utf8')
         if path.startswith('/api'):
             path = path[4:]
 
         string_to_sign = '\n'.join([method, content_md5, content_type, httpdate, path])
-
-        digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha1).digest()
+        if not isinstance(string_to_sign, bytes):
+            string_to_sign = string_to_sign.encode('utf-8')
+        digest = hmac.new(self.access_key, string_to_sign, hashlib.sha1).digest()
         signature = base64.encodestring(digest).rstrip()
+        if isinstance(signature, bytes):
+            signature = signature.decode('utf-8')
 
-        if self.access_key == '':
+        if self.access_id == '':
             r.headers['Authorization'] = 'ODPS %s' % signature
-        elif self.secret_key == '':
-            raise ValueError('HMAC secret key cannot be empty.')
+        elif self.access_key == '':
+            raise ValueError('Access key cannot be empty.')
         else:
-            r.headers['Authorization'] = 'ODPS %s:%s' % (self.access_key, signature)
+            r.headers['Authorization'] = 'ODPS %s:%s' % (self.access_id, signature)
 
         return r
 
 
-class HmacAuthPlugin(AuthPlugin):
+class OdpsAuthPlugin(AuthPlugin):
 
-    name = 'HMAC token auth'
-    auth_type = 'hmac'
-    description = 'Sign requests using a HMAC authentication method like AWS'
+    name = 'ODPS token auth'
+    auth_type = 'odps'
+    description = 'Sign requests using a ODPS compliant method'
 
-    def get_auth(self, access_key, secret_key):
-        return HmacAuth(access_key, secret_key)
+    def get_auth(self, username, password):
+        return OdpsAuth(username, password)
